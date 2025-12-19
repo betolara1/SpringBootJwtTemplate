@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Livro de Receitas - Cliente</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background-color: #f7f7fc;
+        }
+        h1 { color: #333 }
+        label { margin-top: 1em; font-weight: bold; }
+        input, textarea, button { margin: 0.3em 0; padding: 0.5em; }
+        .section { border: 1px solid #aaa; padding: 1em; margin-bottom: 2em; background: #fff; border-radius: 8px;}
+        .result { background:#eee; padding:8px; margin-top:10px; border-radius:6px; }
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 10px;
+            font-weight: bold;
+            display: none;
+        }
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 10px;
+            font-weight: bold;
+            display: none;
+        }
+        .ingredient-row, .instruction-row {
+            display: flex; align-items: center; gap: 7px; margin-top: 6px;
+        }
+        .ingredient-row input, .instruction-row input {
+            width: 180px; /* Ajuste se quiser um pouco mais largo */
+        }
+        .ingredient-row button, .instruction-row button {
+            width: 34px;
+            height: 34px;
+            font-size: 20px;
+            font-weight: bold;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .ingredient-row button:active, .instruction-row button:active {
+            background: #357a38;
+        }
+
+        .ingredient-row, .instruction-row {
+            display: flex; align-items: center; gap: 7px; margin-top: 6px;
+        }
+        .ingredient-row input, .instruction-row input {
+            width: 180px;
+        }
+        .ingredient-row button, .instruction-row button {
+            width: 34px;
+            height: 34px;
+            font-size: 20px;
+            font-weight: bold;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .ingredient-row button:active, .instruction-row button:active {
+            background: #357a38;
+        }
+    </style>
+</head>
+<body>
+    <h1>Livro de Receitas - Exemplo de Integração Frontend</h1>
+    
+    <div class="section">
+        <h2>Criar Nova Receita (POST)</h2>
+        <div id="success-post" class="success-message"></div>
+        <div id="error-post" class="error-message"></div>
+    
+        <label for="title-post">Título:</label>
+        <input type="text" id="title-post"><br>
+    
+        <label for="description-post">Descrição:</label>
+        <textarea id="description-post"></textarea><br>
+    
+        <label for="prepTime-post">Tempo de Preparo:</label>
+        <input type="text" id="prepTime-post"><br>
+    
+        <label for="difficulty-post">Dificuldade:</label>
+        <select id="difficulty-post">
+            <option value="facil">Fácil</option>
+            <option value="medio">Médio</option>
+            <option value="dificil">Difícil</option>
+        </select><br>
+    
+        <label for="temperature-post">Temperatura:</label>
+        <input type="text" id="temperature-post"><br>
+    
+        <!-- Ingredientes, dinâmicos -->
+        <label>Ingredientes:</label>
+        <div id="ingredients-list">
+            <div class="ingredient-row">
+                <input type="text" class="ingredient-quantity" placeholder="Quantidade"/>
+                <input type="text" class="ingredient-item" placeholder="Ingrediente"/>
+                <button type="button" onclick="addIngredientRow()">+</button>
+            </div>
+        </div><br>
+    
+        <!-- Instruções, dinâmicas -->
+        <label>Instruções:</label>
+        <div id="instructions-list">
+            <div class="instruction-row">
+                <input type="text" class="instruction-step" placeholder="Passo da receita"/>
+                <button type="button" onclick="addInstructionRow()">+</button>
+            </div>
+        </div><br>
+    
+        <button onclick="criarReceita()">Criar Receita</button>
+        <div id="result-post" class="result"></div>
+    </div>
+    
+    <div class="section">
+        <h2>Buscar Receita (GET)</h2>
+        <label for="id-get">ID da Receita:</label>
+        <input type="text" id="id-get" />
+        <button onclick="buscarReceita()">Buscar</button>
+        <div id="result-get" class="result"></div>
+    </div>
+    
+    <div class="section" id="edit-section">
+        <h2>Atualizar Receita (PUT)</h2>
+        <label for="id-edit">ID da Receita:</label>
+        <input type="text" id="id-edit" style="width:100px;">
+        <button type="button" onclick="buscarReceitaParaEditar()">Buscar</button><br><br>
+    
+        <div id="edit-form" style="display: none;">
+            <div id="success-edit" class="success-message"></div>
+            <div id="error-edit" class="error-message"></div>
+            
+            <label for="title-edit">Título:</label>
+            <input type="text" id="title-edit"><br>
+    
+            <label for="description-edit">Descrição:</label>
+            <textarea id="description-edit"></textarea><br>
+    
+            <label for="prepTime-edit">Tempo de Preparo:</label>
+            <input type="text" id="prepTime-edit"><br>
+    
+            <label for="difficulty-edit">Dificuldade:</label>
+            <select id="difficulty-edit">
+                <option value="facil">Fácil</option>
+                <option value="medio">Médio</option>
+                <option value="dificil">Difícil</option>
+            </select><br>
+    
+            <label for="temperature-edit">Temperatura:</label>
+            <input type="text" id="temperature-edit"><br>
+    
+            <label>Ingredientes:</label>
+            <div id="ingredients-edit-list"></div><br>
+    
+            <label>Instruções:</label>
+            <div id="instructions-edit-list"></div><br>
+    
+            <button onclick="atualizarReceita()">Atualizar</button>
+        </div>
+        <div id="edit-notfound" class="error-message"></div>
+    </div>
+    
+    <div class="section">
+        <h2>Apagar Receita (DELETE)</h2>
+        <label for="id-del">ID da Receita:</label>
+        <input type="text" id="id-del" />
+        <button onclick="apagarReceita()">Apagar</button>
+        <div id="result-del" class="result"></div>
+    </div>
+
+    <script>
+        // DICA: Troque a URL abaixo pela URL do seu backend Spring Boot
+        // Exemplo: const BASE_URL = "http://localhost:8080/api/receitas";
+        const BASE_URL = "http://localhost:8080/api/receitas";
+
+        // POST - Criar nova receita
+        // Função para adicionar um novo campo de ingrediente
+        function addIngredientRow() {
+            const list = document.getElementById('ingredients-list');
+            const row = document.createElement('div');
+            row.className = 'ingredient-row';
+            row.innerHTML = `
+                <input type="text" class="ingredient-quantity" placeholder="Quantidade"/>
+                <input type="text" class="ingredient-item" placeholder="Ingrediente"/>
+                <button type="button" onclick="removeRow(this)">-</button>
+            `;
+            list.appendChild(row);
+        }
+
+        // Função para adicionar um novo campo de instrução
+        function addInstructionRow() {
+            const list = document.getElementById('instructions-list');
+            const row = document.createElement('div');
+            row.className = 'instruction-row';
+            row.innerHTML = `
+                <input type="text" class="instruction-step" placeholder="Passo da receita"/>
+                <button type="button" onclick="removeRow(this)">-</button>
+            `;
+            list.appendChild(row);
+        }
+
+        // Função para remover campos (ingrediente ou instrução)
+        function removeRow(btn) {
+            btn.parentElement.remove();
+        }
+
+        // Função para criar nova receita
+        function criarReceita() {
+            // Limpa avisos anteriores
+            document.getElementById('success-post').style.display = 'none';
+            document.getElementById('error-post').style.display = 'none';
+
+            const title = document.getElementById('title-post').value;
+            const description = document.getElementById('description-post').value;
+            const prepTime = document.getElementById('prepTime-post').value;
+            const difficulty = document.getElementById('difficulty-post').value;
+            const temperature = document.getElementById('temperature-post').value;
+
+            // Ingredientes (busca todos .ingredient-row)
+            const ingredientRows = document.querySelectorAll('#ingredients-list .ingredient-row');
+            const ingredients = [];
+            ingredientRows.forEach(row => {
+                const quantity = row.querySelector('.ingredient-quantity').value.trim();
+                const item = row.querySelector('.ingredient-item').value.trim();
+                if(item && quantity) { // só adiciona se os dois estiverem preenchidos
+                    ingredients.push({ item, quantity });
+                }
+            });
+
+            // Instruções (busca todos .instruction-row)
+            const instructionRows = document.querySelectorAll('#instructions-list .instruction-row');
+            const instructions = [];
+            instructionRows.forEach(row => {
+                const text = row.querySelector('.instruction-step').value.trim();
+                if(text) instructions.push(text);
+            });
+
+            const receita = {
+                title,
+                description,
+                prepTime,
+                difficulty,
+                temperature,
+                ingredients,
+                instructions
+            };
+
+            fetch(BASE_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(receita)
+            }).then(resp => {
+                if (resp.ok) return resp.json();
+                throw new Error('Erro ao criar receita.');
+            }).then(data => {
+                document.getElementById('result-post').innerText = "Receita criada: " + JSON.stringify(data, null, 2);
+                document.getElementById('success-post').innerText = "Receita salva com sucesso!";
+                document.getElementById('success-post').style.display = 'block';
+            }).catch(err => {
+                document.getElementById('result-post').innerText = '';
+                document.getElementById('error-post').innerText = err.message;
+                document.getElementById('error-post').style.display = 'block';
+            });
+        }
+
+        // GET - Buscar uma receita pelo ID
+        function buscarReceita() {
+            const id = document.getElementById('id-get').value;
+            fetch(`${BASE_URL}/${id}`)
+                .then(resp => resp.ok ? resp.json() : Promise.reject(resp))
+                .then(data => {
+                    document.getElementById('result-get').innerText = JSON.stringify(data, null, 2);
+                })
+                .catch(error => {
+                    document.getElementById('result-get').innerText = "Erro ao buscar receita ou receita não encontrada.";
+                });
+        }
+
+        // PUT - Atualizar uma receita existente
+        function atualizarReceita() {
+            const id = document.getElementById('id-put').value;
+            const nome = document.getElementById('nome-put').value;
+            const descricao = document.getElementById('descricao-put').value;
+            fetch(`${BASE_URL}/${id}`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ nome: nome, descricao: descricao }) // Ajuste os campos conforme sua entidade
+            })
+            .then(resp => {
+                if (resp.ok) return resp.json();
+                throw new Error('Erro ao atualizar receita.');
+            })
+            .then(data => {
+                document.getElementById('result-put').innerText = "Receita atualizada: " + JSON.stringify(data, null, 2);
+            })
+            .catch(err => {
+                document.getElementById('result-put').innerText = err.message;
+            });
+        }
+
+        // DELETE - Apagar uma receita
+        function apagarReceita() {
+            const id = document.getElementById('id-del').value;
+            fetch(`${BASE_URL}/${id}`, { method: 'DELETE' })
+                .then(resp => {
+                    if (resp.ok) {
+                        document.getElementById('result-del').innerText = "Receita apagada com sucesso.";
+                    } else {
+                        throw new Error('Erro ao apagar receita.');
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('result-del').innerText = error.message;
+                });
+        }
+    </script>
+</body>
+</html>
