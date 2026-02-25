@@ -283,7 +283,7 @@ http://localhost:8080/v3/api-docs
 
 ### 📸 Swagger UI
 
-![Swagger UI](./images/swagger-ui.png)
+![Swagger UI](./images/swagger-jwt.png)
 
 A interface interativa permite testar todos os endpoints diretamente do navegador, com exemplos de request/response em tempo real.
 
