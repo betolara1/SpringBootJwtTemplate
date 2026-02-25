@@ -281,6 +281,12 @@ http://localhost:8080/v3/api-docs
 
 **Swagger já está configurado e integrado.** Todos os endpoints são documentados automaticamente.
 
+### 📸 Swagger UI
+
+![Swagger UI](./images/swagger-ui.png)
+
+A interface interativa permite testar todos os endpoints diretamente do navegador, com exemplos de request/response em tempo real.
+
 ---
 
 ### docker-compose.yml
