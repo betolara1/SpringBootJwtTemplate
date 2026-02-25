@@ -28,25 +28,41 @@ public class JwtAuthFilter extends OncePerRequestFilter{
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         
+
+        // Allow unauthenticated access to Swagger/OpenAPI, webjar resources and actuator
+        String path = request.getRequestURI();
+        String method = request.getMethod();
+        if ("OPTIONS".equalsIgnoreCase(method)
+            || path.startsWith(request.getContextPath() + "/v3/api-docs")
+            || path.startsWith(request.getContextPath() + "/swagger")
+            || path.startsWith(request.getContextPath() + "/webjars")
+            || path.startsWith(request.getContextPath() + "/swagger-ui")
+            || path.equals(request.getContextPath() + "/swagger-ui.html")
+            || path.startsWith(request.getContextPath() + "/actuator")
+        ) {
+            filterChain.doFilter(request, response);
+            return;
+        }
         // CONDIÇÃO PARA SABER SE O USUARIO FOI AUTORIZADO
         String authHeader = request.getHeader("Authorization");
-        if (authHeader == null || !authHeader.startsWith("Bearer")){
+        if (authHeader == null || !authHeader.startsWith("Bearer")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-
         String token = authHeader.substring(7);
         String username = JwtUtil.extractUsername(token);
 
-        if(username != null && SecurityContextHolder.getContext().getAuthentication() == null){
+        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-            if(JwtUtil.validateToken(token)){
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+            if (JwtUtil.validateToken(token)) {
+                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                        userDetails, null, userDetails.getAuthorities());
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
-            filterChain.doFilter(request, response);
         }
+        // ensure the chain is always continued
+        filterChain.doFilter(request, response);
         
     }
 }
